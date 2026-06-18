@@ -83,14 +83,6 @@ names(df_raw) <- gsub(" ", "_", names(df_raw))
 cat(sprintf("Dataset dimuat: %d baris x %d kolom\n", nrow(df_raw), ncol(df_raw)))
 cat("Kolom:", paste(names(df_raw), collapse = ", "), "\n")
 
-## 1.2 Cek & hapus duplikat -----------------------------------------------------
-n_duplikat <- sum(duplicated(df_raw))
-cat(sprintf("\nJumlah baris duplikat: %d\n", n_duplikat))
-if (n_duplikat > 0) {
-  df_raw <- df_raw %>% distinct()
-  cat(sprintf("Duplikat dihapus -> jumlah baris sekarang: %d\n", nrow(df_raw)))
-}
-
 ## 1.3 Cek missing value pada data asli ------------------------------------------
 jumlah_na <- colSums(is.na(df_raw))
 tabel_mv <- data.frame(
@@ -674,3 +666,26 @@ cat(sprintf("\nDataset bersih disimpan sebagai: lung_cancer_clean_final.csv\n"))
 cat(strrep("=", 78), "\n", sep = "")
 cat("PIPELINE SELESAI.\n")
 
+# 1. Pastikan R bekerja di folder yang tepat
+setwd("D:/Big Data")
+
+# 2. Inisialisasi Git (jika belum ada)
+system('git init')
+
+# 3. Hubungkan ke GitHub (menggunakan set-url untuk menimpa jika sudah ada)
+system('git remote add origin https://github.com/umamahtazkiya-eng/BigDataKelompok.git', ignore.stderr = TRUE)
+system('git remote set-url origin https://github.com/umamahtazkiya-eng/BigDataKelompok.git')
+
+# 4. Memilih 3 file spesifik yang Anda inginkan
+system('git add "FINAL/lung_cancer_pipeline_FINAL.R" "survey lung cancer (1).csv" "FINAL.R"')
+
+# 5. Memberikan pesan commit
+system('git commit -m "Upload file FINAL, dataset asli, dan script FINAL.R"')
+
+# 6. Mengubah nama branch ke main
+system('git branch -M main')
+
+# 7. Push ke GitHub
+system('git push -u origin main')
+
+cat("Proses Git via R selesai dijalankan! Silakan cek repositori GitHub Anda.\n")
