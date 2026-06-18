@@ -1,5 +1,3 @@
-# =============================================================================
-# PIPELINE TERPADU: PREDIKSI LUNG CANCER
 # Menggabungkan 4 tugas menjadi satu alur kerja yang berkesinambungan:
 #   BAGIAN 1 - Data Preprocessing & Penanganan Missing Value
 #   BAGIAN 2 - Penanganan Class Imbalance (Baseline vs SMOTE vs Undersampling)
@@ -8,26 +6,6 @@
 #
 # Mata Kuliah : Big Data dalam Dunia Kesehatan
 # Dataset     : survey lung cancer (1).csv (Kaggle)
-# Bahasa      : R (RStudio)
-#
-# CATATAN PENGGABUNGAN:
-#  - Seluruh tahap kini memakai SATU sumber data (FILE_PATH di bawah) yang
-#    dibaca SATU KALI di awal. Tidak ada lagi load ulang / data sintetis
-#    seperti pada skrip asli Bagian 3 (yang sebelumnya ditulis di Python).
-#  - Penamaan variabel dirapikan & dikonsistenkan (df_raw, df_clean,
-#    train_raw, train_balanced, X_train_final, dst).
-#  - Encoding GENDER (M=1, F=0) dan LUNG_CANCER (YES=1, NO=0) disamakan di
-#    seluruh pipeline (skrip asli Bagian 2 sempat memakai encoding berbeda).
-#  - Implementasi SMOTE manual yang rawan bug pada skrip asli Bagian 2 diganti
-#    dengan package smotefamily (sama seperti yang sudah dipakai di skrip
-#    asli Bagian 4), dipakai konsisten di Bagian 2 dan Bagian 4.
-#  - Bagian Feature Engineering (semula Python/sklearn) diterjemahkan ke R
-#    agar seluruh pipeline berjalan dalam satu bahasa & satu file:
-#      RFE (sklearn) -> caret::rfe dengan random forest
-#      Mutual Information (sklearn) -> infotheo::mutinformation
-#  - Bagian interpretasi LIME pada skrip asli (yang sempat dobel/duplikat)
-#    dirapikan menjadi satu blok yang bersih.
-# =============================================================================
 
 # -----------------------------------------------------------------------------
 # 0. KONFIGURASI GLOBAL & LIBRARY
@@ -543,18 +521,9 @@ cm_xgb   <- confusionMatrix(pred_xgb, test_model_df$LUNG_CANCER_LABEL, positive 
 print(cm_xgb)
 
 ## 4.5 Tabel perbandingan akhir -----------------------------------------------------------------
-# Tambahkan pROC:: di depan auc() dan roc()
 auc_lr  <- as.numeric(pROC::auc(pROC::roc(test_model_df$LUNG_CANCER_LABEL, prob_lr,  levels = c("NO", "YES"), direction = "<", quiet = TRUE)))
 auc_svm <- as.numeric(pROC::auc(pROC::roc(test_model_df$LUNG_CANCER_LABEL, prob_svm, levels = c("NO", "YES"), direction = "<", quiet = TRUE)))
 auc_xgb <- as.numeric(pROC::auc(pROC::roc(test_model_df$LUNG_CANCER_LABEL, prob_xgb, levels = c("NO", "YES"), direction = "<", quiet = TRUE)))
-
-tabel_model <- data.frame(
-  Model       = c("Logistic Regression", "SVM", "XGBoost"),
-  Accuracy    = round(c(cm_lr$overall["Accuracy"], cm_svm$overall["Accuracy"], cm_xgb$overall["Accuracy"]), 4),
-  Sensitivity = round(c(cm_lr$byClass["Sensitivity"], cm_svm$byClass["Sensitivity"], cm_xgb$byClass["Sensitivity"]), 4),
-  F1_Score    = round(c(cm_lr$byClass["F1"], cm_svm$byClass["F1"], cm_xgb$byClass["F1"]), 4),
-  ROC_AUC     = round(c(auc_lr, auc_svm, auc_xgb), 4)
-)
 cat("\nTabel perbandingan performa model akhir:\n")
 print(kable(tabel_model))
 
@@ -594,10 +563,9 @@ p_metrik <- tabel_model %>%
   theme_minimal(base_size = 12)
 print(p_metrik)
 
-# Tambahkan pROC:: di depan roc()
-roc_lr_obj  <- pROC::roc(test_model_df$LUNG_CANCER_LABEL, prob_lr,  levels = c("NO", "YES"), direction = "<", quiet = TRUE)
-roc_svm_obj <- pROC::roc(test_model_df$LUNG_CANCER_LABEL, prob_svm, levels = c("NO", "YES"), direction = "<", quiet = TRUE)
-roc_xgb_obj <- pROC::roc(test_model_df$LUNG_CANCER_LABEL, prob_xgb, levels = c("NO", "YES"), direction = "<", quiet = TRUE)
+roc_lr_obj  <- roc(test_model_df$LUNG_CANCER_LABEL, prob_lr,  levels = c("NO", "YES"), direction = "<", quiet = TRUE)
+roc_svm_obj <- roc(test_model_df$LUNG_CANCER_LABEL, prob_svm, levels = c("NO", "YES"), direction = "<", quiet = TRUE)
+roc_xgb_obj <- roc(test_model_df$LUNG_CANCER_LABEL, prob_xgb, levels = c("NO", "YES"), direction = "<", quiet = TRUE)
 
 p_roc <- ggroc(list("Logistic Regression" = roc_lr_obj, "SVM" = roc_svm_obj, "XGBoost" = roc_xgb_obj), linewidth = 1) +
   geom_abline(intercept = 1, slope = 1, linetype = "dashed", color = "gray") +
